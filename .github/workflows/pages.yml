@@ -18,14 +18,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Check application syntax
-        run: node --check app.js
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Validate application and local assets
+        run: |
+          npm ci
+          npm run check
+          npm test
+          npm run check:assets
       - uses: actions/configure-pages@v5
       - name: Prepare static site
         run: |
           mkdir _site
-          cp index.html styles.css app.js _site/
-          cp -R assets _site/
+          cp index.html styles.css fonts.css design.css app.js _site/
+          cp -R assets views _site/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site

@@ -1,1 +1,17 @@
-{"name":"oasis-wellness-retreat","version":"1.0.0","private":true,"type":"module","scripts":{"dev":"python3 -m http.server 4173 --bind 0.0.0.0","check":"node --check app.js","test":"node tests/smoke.mjs"},"devDependencies":{"playwright":"1.58.2"}}
+{
+  "name": "oasis-wellness-retreat",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "python3 -m http.server 4173 --bind 0.0.0.0",
+    "check": "node --check app.js",
+    "test": "node tests/smoke.mjs",
+    "check:assets": "node scripts/check-assets.mjs",
+    "assets:download": "node scripts/download-figma-assets.mjs"
+  },
+  "devDependencies": {
+    "jsdom": "^26.1.0",
+    "playwright": "1.58.2"
+  }
+}
