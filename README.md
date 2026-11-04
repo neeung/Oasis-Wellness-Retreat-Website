@@ -46,3 +46,9 @@ Checkout is a frontend demonstration, as indicated in Figma. No reservation, car
 - Layout and copy: supplied Oasis Figma frames; `data-node-id` attributes retain the design mapping.
 - Google font files: Google Fonts CSS distribution, downloaded November 4, 2026.
 - Thai font files: LINE Seed Sans TH 1.000, © LINE 2020–2022, distributed by `@fontpkg/line-seed-sans-th` 1.0.1.
+
+## Homepage interactions
+
+Photography fills its responsive frame using `object-fit: cover`, preserving proportions. Pointer hover adds a subtle image-only zoom within the clipped frame. Homepage sections reveal once as they enter the viewport. Reduced-motion preferences disable these effects, keyboard focus reveals focused content, and unsupported browsers show content normally. Other routes retain their existing behavior.
+
+With the local server running and Chromium available, run `npm run test:home` for hover, responsive image geometry at six widths, scroll reveals, reduced-motion and route scope checks.

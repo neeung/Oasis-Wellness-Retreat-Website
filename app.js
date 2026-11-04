@@ -44,7 +44,31 @@ function home(){search();
  const cards=$$('[data-name^="Article - Card"]');cards.forEach((el,i)=>{const id=['stillness','mist','bamboo'][i];link(el,'#/retreat/'+id)});
  button(named('Action surface',node(7723)),()=>location.hash='#/retreats');
  const heading=named('Retreat collection heading');if(heading){const buttons=$$('[data-name="Button"]',heading);buttons.forEach((e,i)=>button(e,()=>named('Retreats 3-Card Grid').scrollBy({left:i?400:-400,behavior:'smooth'}),i?'ถัดไป':'ก่อนหน้า'))}
+ setupHomeMotion();
  named('Our approach')?.setAttribute('id','approach');if(location.hash.includes('section=approach'))setTimeout(()=>$('#approach')?.scrollIntoView(),50);
+}
+// Activate reveals only with browser support; content remains readable without motion.
+let cleanupHomeMotion=()=>{};
+function setupHomeMotion(){
+ const root=$('.home-page');
+ if(!root||!('IntersectionObserver' in window)||!window.matchMedia)return;
+ const preference=window.matchMedia('(prefers-reduced-motion: reduce)');
+ if(preference.matches)return;
+ const selectors=['[data-name="Hero story"]','[data-name="Immersive landscape"]','[data-name="Retreat search"]','[data-name="Section introduction"]','[data-node-id="22:9653"]','[data-node-id="22:7551"]','[data-node-id="22:9317"]','[data-node-id="22:9328"]','[data-name="Retreat collection heading"]','[data-name^="Article - Card"]','[data-name="Approach introduction"]','[data-name="Approach pillar"]','[data-name="A moment of stillness"] > div'];
+ const targets=$$(selectors.join(','),root);
+ const observer=new IntersectionObserver(entries=>{
+  entries.forEach(({target,isIntersecting})=>{if(isIntersecting){target.classList.add('is-visible');observer.unobserve(target)}});
+ },{threshold:0.06,rootMargin:'0px 0px -24px 0px'});
+ targets.forEach(el=>{
+  el.classList.add('home-reveal');
+  const siblings=[...el.parentElement.children].filter(e=>targets.includes(e));
+  el.style.setProperty('--reveal-delay',Math.min(siblings.indexOf(el),2)*70+'ms');
+  observer.observe(el);
+ });
+ const showFocused=e=>{const target=e.target.closest('.home-reveal');if(target){target.classList.add('is-visible');observer.unobserve(target)}};
+ const showAll=()=>{if(preference.matches){targets.forEach(el=>el.classList.add('is-visible'));observer.disconnect()}};
+ root.addEventListener('focusin',showFocused);preference.addEventListener('change',showAll);
+ cleanupHomeMotion=()=>{observer.disconnect();root.removeEventListener('focusin',showFocused);preference.removeEventListener('change',showAll)};
 }
 let listingCards=[],listingGrid,filters,sort,onlySaved=false;
 function listing(params){search();onlySaved=params.get('saved')==='1';
@@ -109,7 +133,7 @@ function checkout(){
  form.onsubmit=e=>{e.preventDefault();if(!form.reportValidity())return;const name=$('[name=firstName]',form).value;app.innerHTML=`<div class="confirmation"><p>OASIS · YOUR RESET STARTS HERE</p><h1>ยืนยันการจองตัวอย่างแล้ว</h1><p>ขอบคุณ ${escape(name)} สำหรับการทดลองจอง</p><h2 class="retreat-main-title">${escape(current.name)}</h2><p>${escape(dates())}<br>ผู้ใหญ่ ${trip.guests} คน · ${escape(trip.room)}</p><p>ยอดรวม ${money(total())}</p><p>นี่คือการสาธิต ไม่มีการจองจริง เรียกเก็บเงิน หรือส่งอีเมล<br>ข้อมูลส่วนบุคคลและข้อมูลบัตรไม่ถูกบันทึกหรือส่งออก</p><a class="button" href="#/retreats">ค้นหากิจกรรมเพิ่มเติม</a></div>`;window.scrollTo(0,0);document.title='Oasis · ยืนยันการจองตัวอย่าง';};updatePrices();
 }
 const templates={};
-async function route(){const version=++routeVersion;const path=(location.hash||'#/').slice(2).split('?'),segments=path[0].split('/'),params=new URLSearchParams(path[1]||'');if(segments[0]==='saved')params.set('saved','1');const name=segments[0]==='retreats'||segments[0]==='saved'?'listing':segments[0]==='retreat'?'detail':segments[0]==='checkout'?'checkout':'home';current=records.find(x=>x.id===segments[1])||records[0];pageName=name;document.title=`Oasis · ${{home:'Wellness Retreat',listing:'ค้นหากิจกรรม',detail:current.name,checkout:'ข้อมูลการจอง'}[name]}`;
+async function route(){cleanupHomeMotion();cleanupHomeMotion=()=>{};const version=++routeVersion;const path=(location.hash||'#/').slice(2).split('?'),segments=path[0].split('/'),params=new URLSearchParams(path[1]||'');if(segments[0]==='saved')params.set('saved','1');const name=segments[0]==='retreats'||segments[0]==='saved'?'listing':segments[0]==='retreat'?'detail':segments[0]==='checkout'?'checkout':'home';current=records.find(x=>x.id===segments[1])||records[0];pageName=name;document.title=`Oasis · ${{home:'Wellness Retreat',listing:'ค้นหากิจกรรม',detail:current.name,checkout:'ข้อมูลการจอง'}[name]}`;
  try{if(!templates[name]){const res=await fetch(`views/${name}.html`);if(!res.ok)throw Error('ไม่สามารถโหลดหน้าเว็บได้');templates[name]=await res.text()}if(version!==routeVersion)return;app.innerHTML=templates[name];common();if(name==='home')home();else if(name==='listing')listing(params);else if(name==='detail')detail();else checkout();window.scrollTo(0,0);app.focus({preventScroll:true});}catch(e){app.innerHTML='<div class="confirmation"><h1>ไม่สามารถโหลดหน้าได้</h1><p>โปรดรีเฟรชและลองอีกครั้ง</p></div>';console.error(e)}
 }
 window.addEventListener('hashchange',route);route();

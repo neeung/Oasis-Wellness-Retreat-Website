@@ -8,7 +8,8 @@
     "check": "node --check app.js",
     "test": "node tests/smoke.mjs",
     "check:assets": "node scripts/check-assets.mjs",
-    "assets:download": "node scripts/download-figma-assets.mjs"
+    "assets:download": "node scripts/download-figma-assets.mjs",
+    "test:home": "node tests/home-effects.mjs"
   },
   "devDependencies": {
     "jsdom": "^26.1.0",
