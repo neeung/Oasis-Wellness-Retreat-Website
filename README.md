@@ -52,3 +52,9 @@ Checkout is a frontend demonstration, as indicated in Figma. No reservation, car
 Photography fills its responsive frame using `object-fit: cover`, preserving proportions. Pointer hover adds a subtle image-only zoom within the clipped frame. Homepage sections reveal once as they enter the viewport. Reduced-motion preferences disable these effects, keyboard focus reveals focused content, and unsupported browsers show content normally. Other routes retain their existing behavior.
 
 With the local server running and Chromium available, run `npm run test:home` for hover, responsive image geometry at six widths, scroll reveals, reduced-motion and route scope checks.
+
+## Responsive layout
+
+`responsive.css` owns mobile-first layout rules using Bootstrap 5 breakpoints: xs below 576px, sm 576px, md 768px, lg 992px, xl 1200px, xxl 1400px. The Bootstrap framework is not required. Container widths, navigation, activity grids, sidebar filters, galleries and checkout columns adapt at these tiers. Reference: https://getbootstrap.com/docs/5.0/layout/breakpoints/
+
+Run `npm run test:responsive` against the local server to verify all four routes at 13 widths, including both sides of each breakpoint.

@@ -10,7 +10,8 @@
     "check:assets": "node scripts/check-assets.mjs",
     "assets:download": "node scripts/download-figma-assets.mjs",
     "test:home": "node tests/home-effects.mjs",
-    "test:budget": "node tests/budget-slider.mjs"
+    "test:budget": "node tests/budget-slider.mjs",
+    "test:responsive": "node tests/responsive.mjs"
   },
   "devDependencies": {
     "jsdom": "^26.1.0",
