@@ -6,7 +6,7 @@ Updated from Figma `RtBupSFu2pAAZh3NsbP1FS`, Thai flow `22:6647`, typography `22
 
 Four connected views follow the supplied Figma layout: homepage → activity results → activity details → package booking form. Search destination, dates and guest count carry through the flow. Filters, price sorting, saved activities, itinerary accordions, gallery, room choice, price calculation, form validation and demo confirmation are interactive.
 
-All 77 exact Figma image/icon assets are stored locally. Photography and logos were extracted from the supplied `Oasis.fig` archive, matched using the original Figma image hashes. SVGs were exported from their original design nodes. `assets/figma/provenance.json` records the source layers and hashes.
+All 77 original Figma image/icon assets are stored locally. Three low-resolution photographs now use AI-enhanced versions requested by the user; the original files are retained. `assets/enhanced/provenance.json` records those replacements. Photography and logos were extracted from the supplied `Oasis.fig` archive, matched using the original Figma image hashes. SVGs were exported from their original design nodes. `assets/figma/provenance.json` records the source layers and hashes.
 
 Google Sans Flex, Cormorant Garamond and LINE Seed Sans TH font files are included locally. Colors follow the supplied pine green, warm sand, off white, sage and warm linen palette. No runtime Figma or font-server requests are needed.
 

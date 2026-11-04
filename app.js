@@ -15,7 +15,7 @@ const records=[
 {id:'garden',name:'Garden Days',price:17500,rating:4.8,reviews:57,location:'ดอยสะเก็ด เชียงใหม่ ประเทศไทย',tags:['Spa','Meditation'],days:4,image:'ce732a00-92ba-45e5-9807-b0dbe0144d22.jpg'},
 {id:'slow',name:'The Slow Morning',price:14500,rating:4.6,reviews:39,location:'แม่ริม เชียงใหม่ ประเทศไทย',tags:['Yoga','Nature immersion'],days:4,image:'f128c286-ccb5-4a2a-957a-ee569e110c38.jpg'}
 ];
-records.push({id:'mist',name:'Mist & Teak Sanctuary',price:22500,rating:4.95,reviews:84,location:'หางดง เชียงใหม่',tags:['Nature immersion','Meditation'],days:5,image:'e03d5dd1-dc0f-4f30-a8be-8a8031f15911.jpg'},{id:'bamboo',name:'Bamboo Forest Shala',price:14200,rating:4.88,reviews:86,location:'หุบเขาสะเมิง ประเทศไทย',tags:['Yoga','Nature immersion'],days:3,image:'df3b6b6c-518b-4c4d-9637-13a35b2601de.jpg'});
+records.push({id:'mist',name:'Mist & Teak Sanctuary',price:22500,rating:4.95,reviews:84,location:'หางดง เชียงใหม่',tags:['Nature immersion','Meditation'],days:5,image:'../enhanced/mist-teak-sanctuary.webp'},{id:'bamboo',name:'Bamboo Forest Shala',price:14200,rating:4.88,reviews:86,location:'หุบเขาสะเมิง ประเทศไทย',tags:['Yoga','Nature immersion'],days:3,image:'../enhanced/bamboo-meditation.webp'});
 let current=records[0],pageName='home',routeVersion=0;
 function toast(s){$('#toast').textContent=s;$('#toast').classList.add('visible');clearTimeout(toast.timer);toast.timer=setTimeout(()=>$('#toast').classList.remove('visible'),2800)}
 function modal(html){content.innerHTML=html;dialog.showModal()}

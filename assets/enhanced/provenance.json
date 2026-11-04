@@ -1,0 +1,41 @@
+[
+  {
+    "original": "assets/figma/df3b6b6c-518b-4c4d-9637-13a35b2601de.jpg",
+    "enhanced": "assets/enhanced/bamboo-meditation.webp",
+    "originalSize": [
+      512,
+      382
+    ],
+    "enhancedSize": [
+      1452,
+      1083
+    ],
+    "method": "AI-assisted high-resolution restoration requested by the user; small scene details may differ."
+  },
+  {
+    "original": "assets/figma/40dbbf9f-a4a7-4cdf-a9bd-53a24bf9126c.jpg",
+    "enhanced": "assets/enhanced/garden-pool-pavilion.webp",
+    "originalSize": [
+      512,
+      382
+    ],
+    "enhancedSize": [
+      1452,
+      1083
+    ],
+    "method": "AI-assisted high-resolution restoration requested by the user; small scene details may differ."
+  },
+  {
+    "original": "assets/figma/e03d5dd1-dc0f-4f30-a8be-8a8031f15911.jpg",
+    "enhanced": "assets/enhanced/mist-teak-sanctuary.webp",
+    "originalSize": [
+      512,
+      286
+    ],
+    "enhancedSize": [
+      1678,
+      937
+    ],
+    "method": "AI-assisted high-resolution restoration requested by the user; small scene details may differ."
+  }
+]
