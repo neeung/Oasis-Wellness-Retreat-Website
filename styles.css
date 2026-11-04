@@ -16,3 +16,13 @@ header,footer{width:100%}h1{font-weight:inherit}h1>p{font:inherit}.listing-layou
 [data-name="Site footer"] [data-name^="โลโก้"]{overflow:hidden}[data-name="Site footer"] [data-name^="โลโก้"] img{width:164.05%;height:100%;left:-34.37%;top:0;object-fit:fill;max-width:none}
 /* Use the Thai brand typeface for every displayed monetary amount. */
 .money-amount,.money-amount input,.money-amount span{font-family:'LINE Seed Sans TH',sans-serif}
+/* Budget range: native pointer/keyboard controls with synchronized design handles. */
+.budget-slider[data-name="Dual handle budget slider"]{display:block;position:relative;height:40px;overflow:visible;padding:0;touch-action:pan-y;cursor:pointer}
+.budget-slider .budget-rail{position:absolute;left:10px;right:10px;top:18px;height:4px;pointer-events:none}
+.budget-slider [data-name="Slider track"]{position:absolute;inset:0;width:100%;height:4px}
+.budget-slider [data-name="Selected budget"]{top:0;height:4px}
+.budget-slider [data-name="Minimum budget handle"],.budget-slider [data-name="Maximum budget handle"]{top:-8px;transform:translateX(-50%);width:20px;height:20px}
+.budget-slider .budget-range{position:absolute;inset:0;width:100%;height:40px;margin:0;padding:0;border:0;appearance:none;-webkit-appearance:none;background:transparent;pointer-events:none;opacity:0!important;outline:0}
+.budget-slider .budget-range::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:20px;height:40px;background:transparent;border:0;pointer-events:auto;cursor:ew-resize;touch-action:none}
+.budget-slider .budget-range::-moz-range-thumb{width:20px;height:40px;background:transparent;border:0;border-radius:0;pointer-events:auto;cursor:ew-resize;touch-action:none}
+.budget-slider:has(.budget-range-min:focus-visible) [data-name="Minimum budget handle"],.budget-slider:has(.budget-range-max:focus-visible) [data-name="Maximum budget handle"]{outline:3px solid var(--sand);outline-offset:3px;border-radius:50%}

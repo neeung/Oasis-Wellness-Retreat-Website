@@ -79,7 +79,7 @@ function listing(params){search();onlySaved=params.get('saved')==='1';
  const toggle=document.createElement('button');toggle.className='button filter-toggle';toggle.style.display='none';toggle.textContent='ตัวกรองกิจกรรม';toggle.onclick=()=>filters.classList.toggle('expanded');filters.before(toggle);
  input(node(7191),'min','number','12000','','งบประมาณต่ำสุด').min=0;input(node(7195),'max','number','25000','','งบประมาณสูงสุด').min=0;
  $$('input[name=min],input[name=max]',filters).forEach(i=>i.classList.add('money-amount'));
- const slider=named('Dual handle budget slider');if(slider){slider.style.position='relative';const range=document.createElement('input');range.type='range';range.min=12000;range.max=50000;range.step=500;range.value=25000;range.setAttribute('aria-label','ปรับงบประมาณสูงสุด');range.style.cssText='position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer';range.oninput=()=>{$('input[name=max]',filters).value=range.value};slider.append(range);}
+ setupBudgetSlider();
  $$('[data-name="Checkbox option"]',filters).forEach(el=>{const labelText=el.lastElementChild.textContent.trim();const group=el.closest('[data-name="Filter group"]');const groupIndex=$$('[data-name="Filter group"]',filters).indexOf(group);const checked=!!$('img',el.firstElementChild);const label=document.createElement('label');label.className='filter-check';label.innerHTML=`<input type="checkbox" name="filter-${groupIndex}" value="${escape(labelText)}" ${checked?'checked':''}><span>${escape(labelText)}</span>`;el.replaceWith(label)});
  $$('[data-name="Filter accordion heading"]',filters).forEach(el=>{const options=[...el.parentElement.children].slice(1);const b=button(el,()=>{const open=b.getAttribute('aria-expanded')!=='false';options.forEach(o=>o.hidden=open);b.setAttribute('aria-expanded',!open)},el.textContent.trim());b.setAttribute('aria-expanded','true')});
  $$('input[name="filter-0"]',filters).forEach(i=>i.checked=false);
@@ -89,11 +89,47 @@ function listing(params){search();onlySaved=params.get('saved')==='1';
  sort=select(named('Sort selector'),[['curated','เรียงตาม: แนะนำ'],['price','ราคา: ต่ำไปสูง'],['price-desc','ราคา: สูงไปต่ำ'],['rating','คะแนนรีวิวสูงสุด']],'curated','sort','เรียงลำดับกิจกรรม');sort.onchange=filterResults;
  updateSave();filterResults();
 }
+// Native range inputs drive both original handle graphics and the selected track.
+function setupBudgetSlider(){
+ const slider=named('Dual handle budget slider'),lowField=$('input[name=min]',filters),highField=$('input[name=max]',filters);
+ if(!slider)return;
+ const limit=50000,rail=document.createElement('div');rail.className='budget-rail';
+ rail.append(...slider.children);slider.replaceChildren(rail);slider.classList.add('budget-slider');
+ const track=named('Selected budget',slider),lowHandle=named('Minimum budget handle',slider),highHandle=named('Maximum budget handle',slider);
+ const ranges=['ต่ำสุด','สูงสุด'].map((label,i)=>{
+  const range=document.createElement('input');range.type='range';range.min=0;range.max=limit;range.step=1;range.className='budget-range '+(i?'budget-range-max':'budget-range-min');range.setAttribute('aria-label','ปรับงบประมาณ'+label);slider.append(range);return range;
+ });
+ function sync(source='fields',commit=false){
+  const fromRange=source==='lowRange'||source==='highRange';
+  let low=Math.max(0,Math.min(limit,Number(fromRange?ranges[0].value:lowField.value)||0));
+  let high=Math.max(0,Math.min(limit,Number(fromRange?ranges[1].value:highField.value)||0));
+  if(low>high){if(source==='highRange'||source==='highField')high=low;else low=high;}
+  ranges[0].value=low;ranges[1].value=high;
+  ranges[0].setAttribute('aria-valuetext',money(low));ranges[1].setAttribute('aria-valuetext',money(high));
+  const left=low/limit*100+'%',right=high/limit*100+'%';
+  lowHandle.style.left=left;highHandle.style.left=right;track.style.left=left;track.style.width=(high-low)/limit*100+'%';
+  if(commit){lowField.value=low;highField.value=high;}
+ }
+ [lowField,highField].forEach((field,i)=>{field.min=0;field.max=limit;field.step=1;field.addEventListener('input',()=>sync(i?'highField':'lowField'));field.addEventListener('change',()=>sync(i?'highField':'lowField',true));});
+ ranges.forEach((range,i)=>range.addEventListener('input',()=>sync(i?'highRange':'lowRange',true)));
+ let dragging=null;
+ function move(event){const r=rail.getBoundingClientRect();if(!r.width)return;dragging.value=Math.round(Math.max(0,Math.min(1,(event.clientX-r.left)/r.width))*limit);sync(dragging===ranges[0]?'lowRange':'highRange',true);}
+ slider.addEventListener('pointerdown',event=>{
+  if(event.target instanceof HTMLInputElement||event.button!==0)return;
+  const r=rail.getBoundingClientRect(),value=(event.clientX-r.left)/r.width*limit;
+  dragging=Math.abs(value-Number(ranges[0].value))<Math.abs(value-Number(ranges[1].value))?ranges[0]:ranges[1];
+  dragging.focus({preventScroll:true});slider.setPointerCapture(event.pointerId);move(event);event.preventDefault();
+ });
+ slider.addEventListener('pointermove',event=>{if(dragging)move(event)});
+ const stop=()=>{dragging=null};slider.addEventListener('pointerup',stop);slider.addEventListener('pointercancel',stop);slider.addEventListener('lostpointercapture',stop);
+ slider.syncBudget=()=>sync('fields',true);sync();
+}
 function updateSave(){$$('[data-save]').forEach(e=>{e.classList.toggle('save-active',saved.includes(e.dataset.save));e.setAttribute('aria-pressed',saved.includes(e.dataset.save))})}
 function resetFilters(){$$('input[type=checkbox]',filters).forEach(c=>c.checked=false);$('input[name=min]',filters).value=0;$('input[name=max]',filters).value=50000;trip.destination='เชียงใหม่';persist();filterResults()}
 function filterResults(){
  const min=Number($('input[name=min]',filters)?.value||0),max=Number($('input[name=max]',filters)?.value||50000);
  if(min>max){toast('งบประมาณต่ำสุดต้องไม่มากกว่าสูงสุด');return}
+ named('Dual handle budget slider')?.syncBudget?.();
  const groups=Array.from({length:5},(_,i)=>$$(`input[name="filter-${i}"]:checked`,filters).map(x=>x.value));
  const matching=listingCards.filter(({record:r})=>r.price>=min&&r.price<=max&&r.location.includes(trip.destination)&&(!onlySaved||saved.includes(r.id))&&(!groups[0].length||groups[0].some(x=>r.tags.includes(x)))&&(!groups[1].length||groups[1].some(x=>x.includes('4–7')||x.includes('4-7')))&&(!groups[2].length||groups[2].some(x=>x.includes('ทุก')||r.rating>=(x.includes('4.5')?4.5:4)))&&(!groups[3].length||groups[3].some(x=>x.includes('ห้อง')||x.includes('รีสอร์ต')))&&(!groups[4].length||groups[4].every(x=>!x.includes('รถรับส่ง'))));
  const sorted=[...matching].sort((a,b)=>sort.value==='price'?a.record.price-b.record.price:sort.value==='price-desc'?b.record.price-a.record.price:sort.value==='rating'?b.record.rating-a.record.rating:records.indexOf(a.record)-records.indexOf(b.record));
