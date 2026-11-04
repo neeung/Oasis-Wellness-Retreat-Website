@@ -105,6 +105,7 @@ function setupBudgetSlider(){
   let high=Math.max(0,Math.min(limit,Number(fromRange?ranges[1].value:highField.value)||0));
   if(low>high){if(source==='highRange'||source==='highField')high=low;else low=high;}
   ranges[0].value=low;ranges[1].value=high;
+  ranges[0].style.zIndex=low===limit?'3':'1';ranges[1].style.zIndex='2';
   ranges[0].setAttribute('aria-valuetext',money(low));ranges[1].setAttribute('aria-valuetext',money(high));
   const left=low/limit*100+'%',right=high/limit*100+'%';
   lowHandle.style.left=left;highHandle.style.left=right;track.style.left=left;track.style.width=(high-low)/limit*100+'%';

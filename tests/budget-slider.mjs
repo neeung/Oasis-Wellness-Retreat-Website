@@ -12,6 +12,7 @@ try{
  // Crossing handles stop at the other bound rather than reversing the selection.
  await low.fill('49000');assert.equal(await low.inputValue(),await high.inputValue());await geometry(page);
  await page.getByRole('button',{name:'ล้างค่าตัวกรอง',exact:true}).click();assert.equal(await low.inputValue(),'0');assert.equal(await high.inputValue(),'50000');await geometry(page);
+ await low.fill('50000');await drag(low,.8);assert.ok(Number(await low.inputValue())<45000);assert.equal(await high.inputValue(),'50000');
  await page.locator('input[name=min]').fill('12000');await page.locator('input[name=max]').fill('25000');await page.getByRole('button',{name:'ใช้ตัวกรอง',exact:true}).click();await page.getByRole('button',{name:/THB 12,000–25,000/}).click();assert.equal(await high.inputValue(),'50000');await geometry(page);
  const mobile=await browser.newPage({viewport:{width:390,height:844},hasTouch:true});await mobile.goto(base+'#/retreats');await mobile.getByRole('button',{name:'ตัวกรองกิจกรรม',exact:true}).click();await mobile.locator('.budget-slider').scrollIntoViewIfNeeded();const mr=await mobile.locator('.budget-rail').boundingBox();await mobile.touchscreen.tap(mr.x+mr.width*.8,mr.y+2);assert.ok(Number(await mobile.locator('input[name=max]').inputValue())>38000);await geometry(mobile);await mobile.close();assert.deepEqual(errors,[]);
  console.log('PASS: both native thumbs drag, displayed handles and fields synchronize, keyboard, filtering, bounds, reset, chip clear and mobile touch.');
