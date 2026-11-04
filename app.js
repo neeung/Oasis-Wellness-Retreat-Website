@@ -136,14 +136,14 @@ function filterResults(){
  const sorted=[...matching].sort((a,b)=>sort.value==='price'?a.record.price-b.record.price:sort.value==='price-desc'?b.record.price-a.record.price:sort.value==='rating'?b.record.rating-a.record.rating:records.indexOf(a.record)-records.indexOf(b.record));
  listingCards.forEach(({card})=>card.hidden=true);sorted.forEach(({card})=>{card.hidden=false;listingGrid.append(card)});
  $('.empty',listingGrid)?.remove();if(!sorted.length){const e=document.createElement('div');e.className='empty';e.innerHTML='<h2>ไม่พบกิจกรรมที่ตรงกับการค้นหา</h2><p>ลองเปลี่ยนจุดหมายหรือล้างตัวกรอง</p><button class="button">ล้างตัวกรอง</button>';listingGrid.append(e);$('button',e).onclick=resetFilters}
- text(7184,'กดใช้ตัวกรองเพื่ออัปเดตผลลัพธ์');text(7297,'อัปเดตผลลัพธ์แล้ว');text(7301,`${sorted.length} รีทรีตที่คัดสรรมาให้คุณ`);text(7302,`${dates()} · ผู้ใหญ่ ${trip.guests} คน`);
+ text(7184,'กดใช้ตัวกรองเพื่ออัปเดตผลลัพธ์');text(7297,'อัปเดตผลลัพธ์แล้ว');text(7301,`${sorted.length} กิจกรรมที่คัดสรรมาให้คุณ`);text(7302,`${dates()} · ผู้ใหญ่ ${trip.guests} คน`);
  const chips=named('Applied filter chips');chips.replaceChildren();const b=document.createElement('button');b.className='search-control money-amount';b.style.width='auto';b.textContent=`THB ${format(min)}–${format(max)} ×`;b.onclick=()=>{$('input[name=min]',filters).value=0;$('input[name=max]',filters).value=50000;filterResults()};chips.append(b);groups.flat().forEach(value=>{const b=document.createElement('button');b.className='search-control';b.style.width='auto';b.textContent=value+' ×';b.onclick=()=>{$$('input[type=checkbox]',filters).find(i=>i.value===value).checked=false;filterResults()};chips.append(b)});const clear=document.createElement('button');clear.textContent='ล้างทั้งหมด';clear.onclick=resetFilters;chips.append(clear);
  text(7449,`แสดงครบทั้ง ${sorted.length} กิจกรรมตามเงื่อนไข`);
 }
 const roomPrices={'Private Garden Suite':0,'Garden Deluxe Suite':2500};
 const perPerson=()=>current.price+(roomPrices[trip.room]||0),subtotal=()=>perPerson()*trip.guests,service=()=>trip.guests*500,tax=()=>Math.round((subtotal()+service())*.07),total=()=>subtotal()+service()+tax();
 function detail(){
- const isOther=current.id!=='stillness';if(isOther){text(6826,current.name);text(6828,current.location);text(6829,`★ ${current.rating} · ${current.reviews} รีวิว`);const img=$('img',node(6840));img.src='assets/figma/'+current.image;text(6822,'สำรวจรีทรีต / ประเทศไทย / เชียงใหม่ / '+current.name)}
+ const isOther=current.id!=='stillness';if(isOther){text(6826,current.name);text(6828,current.location);text(6829,`★ ${current.rating} · ${current.reviews} รีวิว`);const img=$('img',node(6840));img.src='assets/figma/'+current.image;text(6822,'สำรวจกิจกรรม / ประเทศไทย / เชียงใหม่ / '+current.name)}
  node(6826).classList.add('retreat-main-title');link(node(6822),'#/retreats','กลับไปผลการค้นหา');
  const date=input(node(7087),'date','date',trip.date,'','วันเดินทาง');date.min=new Date().toLocaleDateString('en-CA');date.onchange=()=>{if(date.checkValidity()){trip.date=date.value;persist()}};
  const guests=select(node(7091),[[1,'ผู้ใหญ่ 1 คน'],[2,'ผู้ใหญ่ 2 คน'],[3,'ผู้ใหญ่ 3 คน'],[4,'ผู้ใหญ่ 4 คน']],trip.guests,'guests','ผู้เข้าพัก');guests.onchange=()=>{trip.guests=Number(guests.value);persist();updatePrices()};
