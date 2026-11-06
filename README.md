@@ -58,3 +58,11 @@ With the local server running and Chromium available, run `npm run test:home` fo
 `responsive.css` owns mobile-first layout rules using Bootstrap 5 breakpoints: xs below 576px, sm 576px, md 768px, lg 992px, xl 1200px, xxl 1400px. The Bootstrap framework is not required. Container widths, navigation, activity grids, sidebar filters, galleries and checkout columns adapt at these tiers. Reference: https://getbootstrap.com/docs/5.0/layout/breakpoints/
 
 Run `npm run test:responsive` against the local server to verify all four routes at 13 widths, including both sides of each breakpoint.
+
+## Currency selection
+
+The header selector supports THB (Thai baht), USD (US dollar) and CNY (Chinese yuan) across all four views. The choice is remembered locally. Activity prices, budget fields, applied chips, booking calculations and confirmation follow that choice without replacing form inputs. Budget bounds remain in THB internally to prevent drift when switching currencies. Monetary text uses LINE Seed Sans TH.
+
+Conversion uses a fixed reference snapshot, not a live feed: EXIM Thailand selling rates, November 6, 2026, round 1 — THB 33.58 per USD and THB 5.06875 per CNY. Source: https://www.exim.go.th/TH/exchange_rate/exchange.aspx . The dated rate notice appears below each footer. Update the `exchange` constants and notice together when refreshing rates. Foreign prices display two decimal places. Booking totals use the rounded converted unit price times guests, the converted service fee, then 7% tax, so displayed line items add up to the total.
+
+Run `npm run test:currency` with the local server running for conversions, persistence, stable budget bounds, pending filters, reconciled totals, preserved checkout inputs and foreign-currency responsive layouts.

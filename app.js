@@ -5,7 +5,40 @@ const safeRead=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))
 let saved=safeRead('oasis-saved',[]), trip={destination:'เชียงใหม่',date:'2027-02-12',guests:2,room:'Private Garden Suite',...safeRead('oasis-trip',{})};
 const persist=()=>{try{localStorage.setItem('oasis-trip',JSON.stringify(trip));localStorage.setItem('oasis-saved',JSON.stringify(saved))}catch{}};
 const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const format=n=>Math.round(n).toLocaleString('en-US'), money=n=>`THB ${format(n)}`;
+// Prices are stored in THB. Fixed reference selling rates, EXIM Thailand, 2026-11-06 round 1.
+const exchange={THB:1,USD:33.58,CNY:5.06875};
+let currency=safeRead('oasis-currency','THB');if(!Object.hasOwn(exchange,currency))currency='THB';
+const precision=()=>currency==='THB'?0:2;
+const converted=n=>Number((n/exchange[currency]).toFixed(precision()));
+const format=n=>Number(n).toLocaleString('en-US',{minimumFractionDigits:precision(),maximumFractionDigits:precision()});
+const amount=n=>`${currency} ${format(n)}`,money=n=>amount(converted(n));
+function writeBudget(field,base){field.value=converted(base);field.dataset.baseAmount=base;field.dataset.displayAmount=field.value;}
+function readBudget(field){return field.value===field.dataset.displayAmount?Number(field.dataset.baseAmount):Number(field.value||0)*exchange[currency];}
+function refreshCurrency(){
+ $$('select[name=currency]').forEach(s=>s.value=currency);
+ $$('[data-currency-text]').forEach(e=>{e.textContent=e.dataset.currencyText.replace(/THB\s+([\d,]+)/g,(_,n)=>money(Number(n.replaceAll(',','')))).replaceAll('THB',currency)});
+ const chip=$('[data-budget-chip]');if(chip)chip.textContent=`${currency} ${format(converted(Number(chip.dataset.min)))}–${format(converted(Number(chip.dataset.max)))} ×`;
+ if(pageName==='detail'||pageName==='checkout')updatePrices();
+}
+function setupCurrency(){
+ $$('p,span',app).filter(e=>!e.children.length&&e.textContent.includes('THB')).forEach(e=>e.dataset.currencyText=e.textContent.trim());
+ const account=named('Account navigation');if(account){
+  const old=$$('p',account).find(e=>e.textContent.includes('THB'));
+  const chooser=document.createElement('select');chooser.name='currency';chooser.className='currency-select money-amount';chooser.setAttribute('aria-label','สกุลเงิน');
+  chooser.innerHTML='<option value="THB">THB ฿</option><option value="USD">USD $</option><option value="CNY">CNY ¥</option>';chooser.value=currency;
+  chooser.title='บาทไทย (THB) · ดอลลาร์สหรัฐ (USD) · หยวนจีน (CNY)';
+  if(old)old.replaceWith(chooser);else account.prepend(chooser);
+  chooser.onchange=()=>{
+   const fields=pageName==='listing'?$$('input[name=min],input[name=max]',filters):[];
+   const bounds=fields.map(readBudget);currency=chooser.value;
+   try{localStorage.setItem('oasis-currency',JSON.stringify(currency))}catch{}
+   fields.forEach((field,i)=>writeBudget(field,bounds[i]));named('Dual handle budget slider')?.syncBudget?.();refreshCurrency();
+  };
+ }
+ const note=document.createElement('aside');note.className='currency-note';
+ note.innerHTML='ราคาอ้างอิงเงินบาท · แปลงสกุลเงินโดยประมาณ: 1 USD = 33.58 THB · 1 CNY = 5.06875 THB<br>อัตราขาย <a href="https://www.exim.go.th/TH/exchange_rate/exchange.aspx" target="_blank" rel="noopener noreferrer">EXIM Thailand</a> วันที่ 6 พ.ย. 2026 รอบที่ 1 · ไม่ใช่อัตราเรียลไทม์';
+ named('Site footer')?.after(note);
+}
 const dates=()=>{const start=new Date(trip.date+'T12:00:00');const end=new Date(start);end.setDate(end.getDate()+3);return `${start.getDate()}–${end.getDate()} ${new Intl.DateTimeFormat('th-TH',{month:'long',year:'numeric',calendar:'gregory'}).format(end)}`};
 const records=[
 {id:'stillness',name:'Stillness in Chiang Mai',price:18000,rating:4.9,reviews:128,location:'แม่ริม เชียงใหม่ ประเทศไทย',tags:['Yoga','Meditation'],days:4,image:'37785a3a-a455-4347-8bda-07c5b7965d15.jpg'},
@@ -29,6 +62,7 @@ function common(){
  const header=named('Site header');if(header){link(header.firstElementChild,'#/','Oasis หน้าแรก');const nav=named('Main navigation',header);if(nav){[...nav.children].forEach((e,i)=>link(e,i<2?'#/retreats':'#/?section=approach'));const menu=document.createElement('button');menu.className='mobile-menu';menu.textContent='☰';menu.setAttribute('aria-label','เปิดเมนู');menu.setAttribute('aria-expanded','false');menu.onclick=()=>{nav.classList.toggle('open');menu.setAttribute('aria-expanded',nav.classList.contains('open'))};nav.after(menu)}}
  $$('[data-name="Footer group"]').forEach((g,gi)=>[...g.children].slice(1).forEach((e,i)=>{if(gi===0)link(e,i<2?'#/retreats':'#/?section=approach');else button(e,()=>modal(`<h2>${escape(e.textContent)}</h2><p>Oasis · ข้อมูลตัวอย่างสำหรับทดลองการจอง</p><p>สอบถามรายละเอียดได้ที่ hello@oasis.example</p>`))}));
  $$('[data-name="Account navigation"] p').forEach(e=>{if(e.textContent.includes('ช่วยเหลือ'))button(e,()=>modal('<h2>ความช่วยเหลือด้านการจอง</h2><p>hello@oasis.example</p><p>ทดลองจองได้โดยไม่ต้องเข้าสู่ระบบ</p>'));else if(e.textContent.includes('เข้าสู่ระบบ'))button(e,()=>modal('<h2>ยินดีต้อนรับสู่ Oasis</h2><p>คุณสามารถค้นหาและทดลองจองแพ็กเกจได้โดยไม่ต้องมีบัญชี</p><a class="button" href="#/retreats" onclick="this.closest(\'dialog\').close()">สำรวจกิจกรรม</a>'))});
+ setupCurrency();
  $$('img',app).forEach(i=>{if(!i.alt){const slot=i.closest('[data-name]')?.dataset.name||'';if(/photograph|Chiang Mai|Bamboo|Sanctuary/.test(slot))i.alt=slot==='Retreat photograph'?'บรรยากาศสถานที่พักผ่อน Oasis':slot}});
 }
 function search(){const form=named('Retreat search');if(!form)return;
@@ -79,6 +113,7 @@ function listing(params){search();onlySaved=params.get('saved')==='1';
  const toggle=document.createElement('button');toggle.className='button filter-toggle';toggle.style.display='none';toggle.textContent='ตัวกรองกิจกรรม';toggle.onclick=()=>filters.classList.toggle('expanded');filters.before(toggle);
  input(node(7191),'min','number','12000','','งบประมาณต่ำสุด').min=0;input(node(7195),'max','number','25000','','งบประมาณสูงสุด').min=0;
  $$('input[name=min],input[name=max]',filters).forEach(i=>i.classList.add('money-amount'));
+ $$('input[name=min],input[name=max]',filters).forEach((field,i)=>writeBudget(field,i?25000:12000));
  setupBudgetSlider();
  $$('[data-name="Checkbox option"]',filters).forEach(el=>{const labelText=el.lastElementChild.textContent.trim();const group=el.closest('[data-name="Filter group"]');const groupIndex=$$('[data-name="Filter group"]',filters).indexOf(group);const checked=!!$('img',el.firstElementChild);const label=document.createElement('label');label.className='filter-check';label.innerHTML=`<input type="checkbox" name="filter-${groupIndex}" value="${escape(labelText)}" ${checked?'checked':''}><span>${escape(labelText)}</span>`;el.replaceWith(label)});
  $$('[data-name="Filter accordion heading"]',filters).forEach(el=>{const options=[...el.parentElement.children].slice(1);const b=button(el,()=>{const open=b.getAttribute('aria-expanded')!=='false';options.forEach(o=>o.hidden=open);b.setAttribute('aria-expanded',!open)},el.textContent.trim());b.setAttribute('aria-expanded','true')});
@@ -101,15 +136,16 @@ function setupBudgetSlider(){
  });
  function sync(source='fields',commit=false){
   const fromRange=source==='lowRange'||source==='highRange';
-  let low=Math.max(0,Math.min(limit,Number(fromRange?ranges[0].value:lowField.value)||0));
-  let high=Math.max(0,Math.min(limit,Number(fromRange?ranges[1].value:highField.value)||0));
+  let low=Math.max(0,Math.min(limit,(fromRange?Number(ranges[0].value):readBudget(lowField))||0));
+  let high=Math.max(0,Math.min(limit,(fromRange?Number(ranges[1].value):readBudget(highField))||0));
   if(low>high){if(source==='highRange'||source==='highField')high=low;else low=high;}
   ranges[0].value=low;ranges[1].value=high;
   ranges[0].style.zIndex=low===limit?'3':'1';ranges[1].style.zIndex='2';
   ranges[0].setAttribute('aria-valuetext',money(low));ranges[1].setAttribute('aria-valuetext',money(high));
   const left=low/limit*100+'%',right=high/limit*100+'%';
   lowHandle.style.left=left;highHandle.style.left=right;track.style.left=left;track.style.width=(high-low)/limit*100+'%';
-  if(commit){lowField.value=low;highField.value=high;}
+  [lowField,highField].forEach(field=>{field.max=Math.ceil(limit/exchange[currency]*100)/100;field.step=currency==='THB'?1:.01;field.setAttribute('aria-label',`งบประมาณ${field===lowField?'ต่ำสุด':'สูงสุด'} (${currency})`)});
+  if(commit){writeBudget(lowField,low);writeBudget(highField,high);}
  }
  [lowField,highField].forEach((field,i)=>{field.min=0;field.max=limit;field.step=1;field.addEventListener('input',()=>sync(i?'highField':'lowField'));field.addEventListener('change',()=>sync(i?'highField':'lowField',true));});
  ranges.forEach((range,i)=>range.addEventListener('input',()=>sync(i?'highRange':'lowRange',true)));
@@ -126,22 +162,22 @@ function setupBudgetSlider(){
  slider.syncBudget=()=>sync('fields',true);sync();
 }
 function updateSave(){$$('[data-save]').forEach(e=>{e.classList.toggle('save-active',saved.includes(e.dataset.save));e.setAttribute('aria-pressed',saved.includes(e.dataset.save))})}
-function resetFilters(){$$('input[type=checkbox]',filters).forEach(c=>c.checked=false);$('input[name=min]',filters).value=0;$('input[name=max]',filters).value=50000;trip.destination='เชียงใหม่';persist();filterResults()}
+function resetFilters(){$$('input[type=checkbox]',filters).forEach(c=>c.checked=false);writeBudget($('input[name=min]',filters),0);writeBudget($('input[name=max]',filters),50000);trip.destination='เชียงใหม่';persist();filterResults()}
 function filterResults(){
- const min=Number($('input[name=min]',filters)?.value||0),max=Number($('input[name=max]',filters)?.value||50000);
+ let min=readBudget($('input[name=min]',filters)),max=readBudget($('input[name=max]',filters));
  if(min>max){toast('งบประมาณต่ำสุดต้องไม่มากกว่าสูงสุด');return}
- named('Dual handle budget slider')?.syncBudget?.();
+ named('Dual handle budget slider')?.syncBudget?.();min=readBudget($('input[name=min]',filters));max=readBudget($('input[name=max]',filters));
  const groups=Array.from({length:5},(_,i)=>$$(`input[name="filter-${i}"]:checked`,filters).map(x=>x.value));
- const matching=listingCards.filter(({record:r})=>r.price>=min&&r.price<=max&&r.location.includes(trip.destination)&&(!onlySaved||saved.includes(r.id))&&(!groups[0].length||groups[0].some(x=>r.tags.includes(x)))&&(!groups[1].length||groups[1].some(x=>x.includes('4–7')||x.includes('4-7')))&&(!groups[2].length||groups[2].some(x=>x.includes('ทุก')||r.rating>=(x.includes('4.5')?4.5:4)))&&(!groups[3].length||groups[3].some(x=>x.includes('ห้อง')||x.includes('รีสอร์ต')))&&(!groups[4].length||groups[4].every(x=>!x.includes('รถรับส่ง'))));
+ const matching=listingCards.filter(({record:r})=>converted(r.price)>=converted(min)&&converted(r.price)<=converted(max)&&r.location.includes(trip.destination)&&(!onlySaved||saved.includes(r.id))&&(!groups[0].length||groups[0].some(x=>r.tags.includes(x)))&&(!groups[1].length||groups[1].some(x=>x.includes('4–7')||x.includes('4-7')))&&(!groups[2].length||groups[2].some(x=>x.includes('ทุก')||r.rating>=(x.includes('4.5')?4.5:4)))&&(!groups[3].length||groups[3].some(x=>x.includes('ห้อง')||x.includes('รีสอร์ต')))&&(!groups[4].length||groups[4].every(x=>!x.includes('รถรับส่ง'))));
  const sorted=[...matching].sort((a,b)=>sort.value==='price'?a.record.price-b.record.price:sort.value==='price-desc'?b.record.price-a.record.price:sort.value==='rating'?b.record.rating-a.record.rating:records.indexOf(a.record)-records.indexOf(b.record));
  listingCards.forEach(({card})=>card.hidden=true);sorted.forEach(({card})=>{card.hidden=false;listingGrid.append(card)});
  $('.empty',listingGrid)?.remove();if(!sorted.length){const e=document.createElement('div');e.className='empty';e.innerHTML='<h2>ไม่พบกิจกรรมที่ตรงกับการค้นหา</h2><p>ลองเปลี่ยนจุดหมายหรือล้างตัวกรอง</p><button class="button">ล้างตัวกรอง</button>';listingGrid.append(e);$('button',e).onclick=resetFilters}
  text(7184,'กดใช้ตัวกรองเพื่ออัปเดตผลลัพธ์');text(7297,'อัปเดตผลลัพธ์แล้ว');text(7301,`${sorted.length} กิจกรรมที่คัดสรรมาให้คุณ`);text(7302,`${dates()} · ผู้ใหญ่ ${trip.guests} คน`);
- const chips=named('Applied filter chips');chips.replaceChildren();const b=document.createElement('button');b.className='search-control money-amount';b.style.width='auto';b.textContent=`THB ${format(min)}–${format(max)} ×`;b.onclick=()=>{$('input[name=min]',filters).value=0;$('input[name=max]',filters).value=50000;filterResults()};chips.append(b);groups.flat().forEach(value=>{const b=document.createElement('button');b.className='search-control';b.style.width='auto';b.textContent=value+' ×';b.onclick=()=>{$$('input[type=checkbox]',filters).find(i=>i.value===value).checked=false;filterResults()};chips.append(b)});const clear=document.createElement('button');clear.textContent='ล้างทั้งหมด';clear.onclick=resetFilters;chips.append(clear);
+ const chips=named('Applied filter chips');chips.replaceChildren();const b=document.createElement('button');b.className='search-control money-amount';b.style.width='auto';b.dataset.budgetChip='';b.dataset.min=min;b.dataset.max=max;b.textContent=`${currency} ${format(converted(min))}–${format(converted(max))} ×`;b.onclick=()=>{writeBudget($('input[name=min]',filters),0);writeBudget($('input[name=max]',filters),50000);filterResults()};chips.append(b);groups.flat().forEach(value=>{const b=document.createElement('button');b.className='search-control';b.style.width='auto';b.textContent=value+' ×';b.onclick=()=>{$$('input[type=checkbox]',filters).find(i=>i.value===value).checked=false;filterResults()};chips.append(b)});const clear=document.createElement('button');clear.textContent='ล้างทั้งหมด';clear.onclick=resetFilters;chips.append(clear);
  text(7449,`แสดงครบทั้ง ${sorted.length} กิจกรรมตามเงื่อนไข`);
 }
 const roomPrices={'Private Garden Suite':0,'Garden Deluxe Suite':2500};
-const perPerson=()=>current.price+(roomPrices[trip.room]||0),subtotal=()=>perPerson()*trip.guests,service=()=>trip.guests*500,tax=()=>Math.round((subtotal()+service())*.07),total=()=>subtotal()+service()+tax();
+const perPerson=()=>current.price+(roomPrices[trip.room]||0),service=()=>trip.guests*500;
 function detail(){
  const isOther=current.id!=='stillness';if(isOther){text(6826,current.name);text(6828,current.location);text(6829,`★ ${current.rating} · ${current.reviews} รีวิว`);const img=$('img',node(6840));img.src='assets/figma/'+current.image;text(6822,'สำรวจกิจกรรม / ประเทศไทย / เชียงใหม่ / '+current.name)}
  node(6826).classList.add('retreat-main-title');link(node(6822),'#/retreats','กลับไปผลการค้นหา');
@@ -157,7 +193,26 @@ function detail(){
  button(node(7049),()=>modal('<h2>รีวิวจากผู้เข้าพัก</h2><p>4.9 / 5 · 128 รีวิวตัวอย่าง</p><p>“ช่วงเวลาพักระหว่างกิจกรรมมีคุณค่าไม่แพ้ตัวกิจกรรมเลย”</p><p>ข้อมูลรีวิวในหน้านี้เป็นข้อมูลตัวอย่างจากดีไซน์</p>'));
  updatePrices();
 }
-function updatePrices(){const amounts=pageName==='detail'?[[7082,money(perPerson())],[7099,`${money(perPerson())} × ${trip.guests} คน`],[7100,money(subtotal())],[7103,money(service())],[7106,money(tax())],[7110,format(total())]]:[[6787,`${money(perPerson())} × ${trip.guests} คน`],[6788,money(subtotal())],[6791,money(service())],[6794,money(tax())],[6798,format(total())],[6751,money(total())],[6762,current.name],[6763,current.location],[6764,`★ ${current.rating} · ${current.reviews} รีวิว`],[6774,`ผู้เข้าพักผู้ใหญ่ ${trip.guests} คน`],[6778,trip.room],[6770,`${dates()} · 4 วัน / 3 คืน`],[6682,`ข้อมูลผู้จองหลัก · คุณกำลังจองสำหรับผู้ใหญ่ ${trip.guests} คน`],[6784,`${money(perPerson())} ต่อผู้เข้าพัก · ราคารวมทริป คำนวณจากผู้เข้าพัก ${trip.guests} คน`]];amounts.forEach(([id,v])=>text(id,v));if(pageName==='checkout'){const action=named('Action surface',node(6753));if(action){action.classList.add('money-amount');action.textContent=`ชำระ ${money(total())} และยืนยัน`;}}}
+function updatePrices(){
+ // Calculate from rounded unit prices so the displayed subtotal, fee and tax reconcile.
+ const unit=converted(perPerson()),sub=unit*trip.guests,fee=converted(service());
+ const vat=Number(((sub+fee)*.07).toFixed(precision())),sum=sub+fee+vat;
+ const amounts=pageName==='detail'?
+  [[7082,amount(unit)],[7099,`${amount(unit)} × ${trip.guests} คน`],[7100,amount(sub)],
+   [7103,amount(fee)],[7106,amount(vat)],[7110,format(sum)]]:
+  [[6787,`${amount(unit)} × ${trip.guests} คน`],[6788,amount(sub)],
+   [6791,amount(fee)],[6794,amount(vat)],[6798,format(sum)],[6751,amount(sum)],
+   [6762,current.name],[6763,current.location],[6764,`★ ${current.rating} · ${current.reviews} รีวิว`],
+   [6774,`ผู้เข้าพักผู้ใหญ่ ${trip.guests} คน`],[6778,trip.room],[6770,`${dates()} · 4 วัน / 3 คืน`],
+   [6682,`ข้อมูลผู้จองหลัก · คุณกำลังจองสำหรับผู้ใหญ่ ${trip.guests} คน`],
+   [6784,`${amount(unit)} ต่อผู้เข้าพัก · ราคารวมทริป คำนวณจากผู้เข้าพัก ${trip.guests} คน`]];
+ amounts.forEach(([id,v])=>text(id,v));
+ if(pageName==='checkout'){
+  node(6784)?.classList.add('money-amount');
+  const action=named('Action surface',node(6753));
+  if(action){action.classList.add('money-amount');action.textContent=`ชำระ ${amount(sum)} และยืนยัน`;}
+ }
+}
 function checkout(){
  link(named('Back to retreat'),'#/retreat/'+current.id);link(node(6759),'#/retreat/'+current.id);const original=named('Guest and payment form');const form=document.createElement('form');form.id='checkout-form';form.className=original.className+' booking-form';form.dataset.name='Guest and payment form';form.noValidate=false;form.append(...original.childNodes);original.replaceWith(form);
  const fields=[[6686,'firstName','text','อเล็กซ์','ชื่อ',true,'given-name'],[6690,'lastName','text','มอร์แกน','นามสกุล',true,'family-name'],[6694,'email','email','alex.morgan@example.com','อีเมล',true,'email'],[6705,'phone','tel','000 000 0000','เบอร์โทรศัพท์',true,'tel-national'],[6710,'notes','textarea','เช่น ข้อจำกัดอาหารหรือความต้องการพิเศษ','คำขอพิเศษ',false,'off'],[6722,'cardName','text','อเล็กซ์ มอร์แกน','ชื่อผู้ถือบัตร',false,'off'],[6726,'card','text','0000 0000 0000 0000','หมายเลขบัตรตัวอย่าง',false,'off'],[6732,'expiry','text','เดือน / ปี','วันหมดอายุ',false,'off'],[6736,'cvv','password','•••','รหัส CVV ตัวอย่าง',false,'off']];
@@ -168,10 +223,10 @@ function checkout(){
  const pay=button(named('Action surface',node(6753)),null,'ยืนยันการจองตัวอย่าง');pay.type='submit';pay.onclick=null;
  const picture=$('img',node(6760));if(current.id!=='stillness')picture.src='assets/figma/'+current.image;
  text(6696,'ใช้สำหรับทดลองกรอกข้อมูลเท่านั้น ไม่มีการส่งอีเมลจริง');text(6754,'การจองตัวอย่าง ไม่มีการเรียกเก็บเงินจริงหรือส่งข้อมูล');
- form.onsubmit=e=>{e.preventDefault();if(!form.reportValidity())return;const name=$('[name=firstName]',form).value;app.innerHTML=`<div class="confirmation"><p>OASIS · YOUR RESET STARTS HERE</p><h1>ยืนยันการจองตัวอย่างแล้ว</h1><p>ขอบคุณ ${escape(name)} สำหรับการทดลองจอง</p><h2 class="retreat-main-title">${escape(current.name)}</h2><p>${escape(dates())}<br>ผู้ใหญ่ ${trip.guests} คน · ${escape(trip.room)}</p><p class="money-amount">ยอดรวม ${money(total())}</p><p>นี่คือการสาธิต ไม่มีการจองจริง เรียกเก็บเงิน หรือส่งอีเมล<br>ข้อมูลส่วนบุคคลและข้อมูลบัตรไม่ถูกบันทึกหรือส่งออก</p><a class="button" href="#/retreats">ค้นหากิจกรรมเพิ่มเติม</a></div>`;window.scrollTo(0,0);document.title='Oasis · ยืนยันการจองตัวอย่าง';};updatePrices();
+ form.onsubmit=e=>{e.preventDefault();if(!form.reportValidity())return;const name=$('[name=firstName]',form).value,paid=node(6751).textContent;app.innerHTML=`<div class="confirmation"><p>OASIS · YOUR RESET STARTS HERE</p><h1>ยืนยันการจองตัวอย่างแล้ว</h1><p>ขอบคุณ ${escape(name)} สำหรับการทดลองจอง</p><h2 class="retreat-main-title">${escape(current.name)}</h2><p>${escape(dates())}<br>ผู้ใหญ่ ${trip.guests} คน · ${escape(trip.room)}</p><p class="money-amount">ยอดรวม ${escape(paid)}</p><p>นี่คือการสาธิต ไม่มีการจองจริง เรียกเก็บเงิน หรือส่งอีเมล<br>ข้อมูลส่วนบุคคลและข้อมูลบัตรไม่ถูกบันทึกหรือส่งออก</p><a class="button" href="#/retreats">ค้นหากิจกรรมเพิ่มเติม</a></div>`;window.scrollTo(0,0);document.title='Oasis · ยืนยันการจองตัวอย่าง';};updatePrices();
 }
 const templates={};
 async function route(){cleanupHomeMotion();cleanupHomeMotion=()=>{};const version=++routeVersion;const path=(location.hash||'#/').slice(2).split('?'),segments=path[0].split('/'),params=new URLSearchParams(path[1]||'');if(segments[0]==='saved')params.set('saved','1');const name=segments[0]==='retreats'||segments[0]==='saved'?'listing':segments[0]==='retreat'?'detail':segments[0]==='checkout'?'checkout':'home';current=records.find(x=>x.id===segments[1])||records[0];pageName=name;document.title=`Oasis · ${{home:'Wellness Retreat',listing:'ค้นหากิจกรรม',detail:current.name,checkout:'ข้อมูลการจอง'}[name]}`;
- try{if(!templates[name]){const res=await fetch(`views/${name}.html`);if(!res.ok)throw Error('ไม่สามารถโหลดหน้าเว็บได้');templates[name]=await res.text()}if(version!==routeVersion)return;app.innerHTML=templates[name];common();if(name==='home')home();else if(name==='listing')listing(params);else if(name==='detail')detail();else checkout();window.scrollTo(0,0);app.focus({preventScroll:true});}catch(e){app.innerHTML='<div class="confirmation"><h1>ไม่สามารถโหลดหน้าได้</h1><p>โปรดรีเฟรชและลองอีกครั้ง</p></div>';console.error(e)}
+ try{if(!templates[name]){const res=await fetch(`views/${name}.html`);if(!res.ok)throw Error('ไม่สามารถโหลดหน้าเว็บได้');templates[name]=await res.text()}if(version!==routeVersion)return;app.innerHTML=templates[name];common();if(name==='home')home();else if(name==='listing')listing(params);else if(name==='detail')detail();else checkout();refreshCurrency();window.scrollTo(0,0);app.focus({preventScroll:true});}catch(e){app.innerHTML='<div class="confirmation"><h1>ไม่สามารถโหลดหน้าได้</h1><p>โปรดรีเฟรชและลองอีกครั้ง</p></div>';console.error(e)}
 }
 window.addEventListener('hashchange',route);route();

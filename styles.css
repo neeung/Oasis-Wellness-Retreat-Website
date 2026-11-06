@@ -16,6 +16,9 @@ header,footer{width:100%}h1{font-weight:inherit}h1>p{font:inherit}.listing-layou
 [data-name="Site footer"] [data-name^="โลโก้"]{overflow:hidden}[data-name="Site footer"] [data-name^="โลโก้"] img{width:164.05%;height:100%;left:-34.37%;top:0;object-fit:fill;max-width:none}
 /* Use the Thai brand typeface for every displayed monetary amount. */
 .money-amount,.money-amount input,.money-amount span{font-family:'LINE Seed Sans TH',sans-serif}
+.currency-select{width:82px;min-width:82px;min-height:44px;padding:4px;background:transparent;border:1px solid var(--line);border-radius:8px;font-size:14px;cursor:pointer}
+.currency-note{width:100%;padding:20px var(--page-gutter);background:var(--sage);color:var(--muted);font:12px/1.8 'LINE Seed Sans TH',sans-serif;text-align:center;white-space:normal}
+.currency-note a{text-decoration:underline}
 /* Budget range: native pointer/keyboard controls with synchronized design handles. */
 .budget-slider[data-name="Dual handle budget slider"]{display:block;position:relative;height:40px;overflow:visible;padding:0;touch-action:pan-y;cursor:pointer}
 .budget-slider .budget-rail{position:absolute;left:10px;right:10px;top:18px;height:4px;pointer-events:none}
