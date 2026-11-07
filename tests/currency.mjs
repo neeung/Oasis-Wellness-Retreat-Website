@@ -5,7 +5,8 @@ const page=await browser.newPage({viewport:{width:1440,height:1000},reducedMotio
 const base=process.env.TEST_BASE_URL||'http://127.0.0.1:4173/';
 const errors=[];page.on('pageerror',e=>errors.push(e.message));
 const price=id=>page.locator(`[data-node-id="22:${id}"]`);
-const choose=code=>page.getByRole('combobox',{name:'สกุลเงิน',exact:true}).selectOption(code);
+async function selectValue(name,value){await page.locator(`[data-select-name="${name}"]`).click();await page.locator(`[role=option][data-value="${value}"]`).click();}
+const choose=code=>selectValue('currency',code);
 const number=text=>Number(text.replace(/[^\d.]/g,''));
 async function go(route){await page.goto(base+route);await page.getByRole('combobox',{name:'สกุลเงิน',exact:true}).waitFor();}
 try{
@@ -24,7 +25,7 @@ try{
  await choose('USD');await max.fill('536.03');await max.blur();await page.getByRole('button',{name:'ใช้ตัวกรอง',exact:true}).click();assert.equal(await page.locator('[data-retreat=stillness]').isVisible(),true,'A price equal to the displayed maximum must be included');
  await choose('CNY');
  await go('#/retreat/stillness');assert.match(await price(7082).textContent(),/^CNY /);
- await page.locator('select[name=room]').selectOption('Garden Deluxe Suite');await page.locator('select[name=guests]').selectOption('3');
+ await selectValue('room','Garden Deluxe Suite');await selectValue('guests','3');
  await choose('USD');const expected=await price(7110).textContent();
  await go('#/checkout/stillness');assert.equal(await price(6798).textContent(),expected);
  await page.locator('[name=firstName]').fill('Nina');await page.locator('[name=email]').fill('nina@example.com');await page.locator('[name=terms]').check();

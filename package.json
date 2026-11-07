@@ -5,14 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "python3 -m http.server 4173 --bind 0.0.0.0",
-    "check": "node --check app.js",
+    "check": "node --check app.js && node --check ui.js",
     "test": "node tests/smoke.mjs",
     "check:assets": "node scripts/check-assets.mjs",
     "assets:download": "node scripts/download-figma-assets.mjs",
     "test:home": "node tests/home-effects.mjs",
     "test:budget": "node tests/budget-slider.mjs",
     "test:responsive": "node tests/responsive.mjs",
-    "test:currency": "node tests/currency.mjs"
+    "test:currency": "node tests/currency.mjs",
+    "test:ui": "node tests/ui-controls.mjs"
   },
   "devDependencies": {
     "jsdom": "^26.1.0",

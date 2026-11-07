@@ -32,7 +32,7 @@ jobs:
       - name: Prepare static site
         run: |
           mkdir _site
-          cp index.html styles.css home.css responsive.css fonts.css design.css app.js _site/
+          cp index.html styles.css home.css responsive.css fonts.css design.css app.js ui.css ui.js _site/
           cp -R assets views _site/
       - uses: actions/upload-pages-artifact@v3
         with:

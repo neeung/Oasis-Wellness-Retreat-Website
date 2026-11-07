@@ -66,3 +66,11 @@ The header selector supports THB (Thai baht), USD (US dollar) and CNY (Chinese y
 Conversion uses a fixed reference snapshot, not a live feed: EXIM Thailand selling rates, November 6, 2026, round 1 — THB 33.58 per USD and THB 5.06875 per CNY. Source: https://www.exim.go.th/TH/exchange_rate/exchange.aspx . The dated rate notice appears below each footer. Update the `exchange` constants and notice together when refreshing rates. Foreign prices display two decimal places. Booking totals use the rounded converted unit price times guests, the converted service fee, then 7% tax, so displayed line items add up to the total.
 
 Run `npm run test:currency` with the local server running for conversions, persistence, stable budget bounds, pending filters, reconciled totals, preserved checkout inputs and foreign-currency responsive layouts.
+
+## Shared interactive controls
+
+`ui.js` and `ui.css` provide the Oasis dropdown, calendar, text-field, checkbox, button and focus states across all four pages. Rounded white popovers, pine primary highlights, checkmarks, subtle shadows and sage focus surfaces follow the site's existing tokens. Native form controls retain their values and original change handlers underneath the custom presentation; no framework or production package is added.
+
+Dropdowns support pointer/touch, arrows, Home/End, typing to find an option, Enter/Space, Escape, Tab and outside dismissal. They use combobox/listbox semantics and a single active option. Popovers use the browser's top layer when available and reposition within the visible viewport. The Thai calendar supports date limits, month navigation, arrows, Home/End, PageUp/PageDown, today's date and focus restoration. Reduced-motion preferences disable popup animation.
+
+Run `npm run test:ui` with the local server running to verify real mouse/keyboard controls, branded hover/focus, calendar state, validation, price calculations, form preservation and popup bounds at every Bootstrap boundary. GitHub Pages includes both UI files and checks their syntax before publishing.

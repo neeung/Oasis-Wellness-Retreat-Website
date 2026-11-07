@@ -1,0 +1,78 @@
+/* Shared interaction tokens, using the existing Oasis pine primary. */
+:root{--primary:var(--pine);--primary-foreground:#fff;--focus-ring:#2c4a3b26;--control-radius:12px;--popover-shadow:0 16px 48px #1632261c,0 2px 8px #1632260d;accent-color:var(--primary)}
+.ui-select{position:relative;display:block;max-width:100%;min-width:0;border-radius:var(--control-radius);transition:box-shadow .18s,background-color .18s}
+.ui-native-select{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip-path:inset(50%);white-space:nowrap;opacity:0;pointer-events:none}
+.ui-select-trigger{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-width:0;min-height:24px;padding:0;border:0;background:transparent;font:inherit;text-align:left;line-height:inherit;border-radius:inherit;filter:none!important}
+.ui-select-value{min-width:0;white-space:normal;overflow-wrap:anywhere}
+.ui-select-trigger>svg,.ui-calendar-trigger>svg,.ui-calendar-nav>svg,.ui-option>svg{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.ui-select-trigger>svg{color:var(--muted);transition:transform .18s}
+.ui-select.is-open .ui-select-trigger>svg{transform:rotate(180deg);color:var(--primary)}
+.ui-select:hover{box-shadow:inset 0 0 0 1px var(--primary)}
+.ui-select.is-open,.ui-select:has(.ui-select-trigger:focus-visible),.ui-field:focus-within{box-shadow:inset 0 0 0 1.5px var(--primary),0 0 0 4px var(--focus-ring);background-color:#f5f8f3}
+.ui-select-trigger:focus-visible,.ui-field>.interactive-input:focus-visible{outline:0;box-shadow:none}
+.ui-select-trigger:disabled{opacity:.5;cursor:not-allowed}
+.ui-select.currency-select{flex-shrink:0;padding:8px 6px;border-radius:10px}
+.ui-select.currency-select .ui-select-trigger{gap:2px;font-size:13px}
+.ui-select.currency-select .ui-select-trigger>svg{width:14px;height:14px}
+.ui-select.currency-select .ui-select-value{white-space:nowrap}
+[data-name="Account navigation"]{overflow:visible}
+[data-name="Account navigation"]>button{flex-shrink:1;min-width:0}
+.account-help-short{display:none}
+.ui-popover{position:fixed;inset:auto;margin:0;padding:6px;z-index:200;width:240px;max-width:calc(100vw - 24px);overflow:auto;overscroll-behavior:contain;border:1px solid var(--line);border-radius:16px;background:#fff;color:var(--ink);box-shadow:var(--popover-shadow);font:14px/1.6 'Google Sans Flex','LINE Seed Sans TH',sans-serif;animation:ui-popover-in .16s ease-out;transform-origin:top}
+.ui-popover[data-side=top]{transform-origin:bottom}
+.ui-option{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:44px;padding:10px 12px;border-radius:10px;cursor:pointer;transition:background-color .12s,color .12s}
+.ui-option>svg{width:17px;height:17px;visibility:hidden}
+.ui-option[aria-selected=true]>svg{visibility:visible}
+.ui-option[aria-selected=true],.ui-option.is-active,.ui-option:hover{background:var(--primary);color:var(--primary-foreground)}
+.ui-option+.ui-option{margin-top:3px}
+.ui-field{border-radius:var(--control-radius);transition:box-shadow .18s,background-color .18s}
+.ui-field:hover{box-shadow:inset 0 0 0 1px #2c4a3b66}
+.interactive-input::placeholder{color:#7b837d;opacity:1}
+.ui-field-invalid,.ui-field-invalid:focus-within{box-shadow:inset 0 0 0 1.5px #a13f32,0 0 0 4px #a13f3215}
+.ui-date-field{display:flex!important;align-items:center;gap:8px}
+.ui-date-field>.interactive-input{flex:1;width:0;min-width:0;color-scheme:light}
+.ui-date-field input::-webkit-calendar-picker-indicator{display:none}
+.ui-calendar-trigger,.ui-calendar-nav{display:grid;place-items:center;width:32px;height:32px;flex:none;padding:6px;border-radius:8px;color:var(--primary)}
+.ui-calendar-trigger[aria-expanded=true],.ui-calendar-trigger:hover,.ui-calendar-nav:hover:not(:disabled),.ui-calendar-footer button:hover:not(:disabled){background:var(--primary);color:#fff;filter:none}
+.ui-calendar{padding:14px}
+.ui-calendar-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.ui-calendar-heading>p{font-family:'LINE Seed Sans TH',sans-serif;font-size:14px;font-weight:700;color:var(--primary)}
+.ui-calendar-nav[data-direction="-1"]>svg{transform:rotate(90deg)}
+.ui-calendar-nav[data-direction="1"]>svg{transform:rotate(-90deg)}
+.ui-calendar-weekdays,.ui-calendar-grid>[role=row]{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px}
+.ui-calendar-weekdays{margin-bottom:6px;color:var(--muted);font-size:12px;text-align:center}
+.ui-calendar-grid{display:grid;gap:2px}
+.ui-calendar-day{display:grid;place-items:center;width:100%;aspect-ratio:1;padding:0;border-radius:9px;font:13px/1 'LINE Seed Sans TH',sans-serif}
+.ui-calendar-day[data-outside=true]{color:#7b837d}
+.ui-calendar-day[aria-current=date]{box-shadow:inset 0 0 0 1px var(--primary);color:var(--primary);font-weight:700}
+.ui-calendar-day[aria-selected=true],.ui-calendar-day:hover:not(:disabled){background:var(--primary);color:#fff;filter:none}
+.ui-calendar button:disabled{opacity:.3;cursor:not-allowed}
+.ui-calendar-footer{border-top:1px solid var(--line);padding-top:8px;margin-top:12px;display:flex;justify-content:flex-end}
+.ui-calendar-footer>button{border-radius:8px;padding:6px 12px;color:var(--primary);font-size:13px}
+input[type=checkbox]{appearance:none;display:inline-grid;place-content:center;border:1.5px solid #8c9b90;border-radius:5px;background:#fff;cursor:pointer;transition:background-color .14s,border-color .14s,box-shadow .14s}
+input[type=checkbox]::before{content:'';width:5px;height:9px;border:solid #fff;border-width:0 2px 2px 0;transform:translateY(-1px) rotate(45deg) scale(0)}
+input[type=checkbox]:checked{background:var(--primary);border-color:var(--primary)}
+input[type=checkbox]:checked::before{transform:translateY(-1px) rotate(45deg) scale(1)}
+input[type=checkbox]:hover{border-color:var(--primary);box-shadow:0 0 0 3px var(--focus-ring)}
+.filter-check:hover{color:var(--primary)}
+[data-name="Account navigation"]>button:hover{color:var(--primary);text-decoration:underline;text-underline-offset:4px;filter:none}
+[data-name="Footer group"]>button:hover{color:#fff;text-decoration:underline;text-underline-offset:4px;filter:none}
+.mobile-menu:hover,button[data-name="Save retreat control"]:hover,button[data-name="Save retreat"]:hover,button[data-name="Share retreat"]:hover{background:var(--primary);color:#fff;filter:none}
+button[data-name="Save retreat control"]:hover img,button[data-name="Save retreat"]:hover img,button[data-name="Share retreat"]:hover img{filter:brightness(0) invert(1)}
+button[data-name="Day summary"]:hover{background:var(--sage);color:var(--primary);border-radius:var(--control-radius);filter:none}
+button[data-name="Action surface"],.button,[data-name="Applied filter chips"]>button,[data-name="Section tab"],[data-name="Filter accordion heading"]{transition:background-color .16s,color .16s,box-shadow .16s}
+button[data-name="Action surface"]:hover,.button:hover,button[data-name="Action surface"]:active,.button:active,[data-name="Applied filter chips"]>button:hover,[data-name="Section tab"]:hover,[data-name="Filter accordion heading"]:hover{background:var(--primary);color:#fff;filter:none}
+button[data-name="Action surface"]:hover :is(p,span),.button:hover :is(p,span),[data-name="Section tab"]:hover p,[data-name="Filter accordion heading"]:hover p{color:inherit}
+button[data-name="Action surface"]:hover img,[data-name="Section tab"]:hover img,[data-name="Filter accordion heading"]:hover img{filter:brightness(0) invert(1)}
+button:focus-visible,a:focus-visible,input[type=checkbox]:focus-visible{outline:2px solid var(--primary);outline-offset:3px;box-shadow:0 0 0 5px var(--focus-ring)}
+.budget-slider:has(.budget-range-min:focus-visible) [data-name="Minimum budget handle"],.budget-slider:has(.budget-range-max:focus-visible) [data-name="Maximum budget handle"]{outline-color:var(--primary)}
+@keyframes ui-popover-in{from{opacity:0;transform:translateY(-4px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+.mobile-account-action{display:none}
+@media(max-width:575.98px){
+ .account-help-long{display:none}.account-help-short{display:inline}
+ [data-name="Retreat search"]>[data-name="Dates Picker Input"],[data-name="Retreat search"]>[data-name="Guests Dropdown"]{grid-column:1/-1}
+ [data-name="Site header"]:has([data-name="Main navigation"]) [data-name="Account navigation"]>button{display:none}
+ .mobile-account-action{display:block;min-height:44px;padding:8px 20px;border:1px solid var(--primary);border-radius:var(--control-radius);color:var(--primary)}
+ .mobile-account-action:hover{background:var(--primary);color:#fff;filter:none}
+}
+@media(prefers-reduced-motion:reduce){.ui-popover{animation:none}.ui-select,.ui-field,.ui-option,.ui-select-trigger>svg{transition:none}}
