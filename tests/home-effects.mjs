@@ -6,7 +6,7 @@ const errors=[];page.on('pageerror',e=>errors.push(e.message));
 const base=process.env.TEST_BASE_URL||'http://127.0.0.1:4173/';
 try{
  await page.goto(base);await page.locator('.home-page').waitFor();await page.evaluate(()=>document.fonts.ready);
- const photo=page.locator('[data-node-id="22:7498"] .home-photo');await photo.evaluate(i=>i.decode());
+ const photo=page.locator('[data-node-id="22:7498"] .home-photo').first();await photo.evaluate(i=>i.decode());
  const later=page.locator('[data-name="A moment of stillness"] .home-reveal').first();assert.equal(await later.evaluate(e=>e.classList.contains('is-visible')),false);
  const frame=page.locator('[data-node-id="22:7498"]');const before=await frame.boundingBox();await frame.hover();await page.waitForTimeout(750);
  assert.ok(await photo.evaluate(i=>new DOMMatrix(getComputedStyle(i).transform).a>1.03));const after=await frame.boundingBox();assert.ok(Math.abs(after.width-before.width)<.1);assert.ok(Math.abs(after.height-before.height)<.1);

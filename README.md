@@ -53,6 +53,8 @@ Photography fills its responsive frame using `object-fit: cover`, preserving pro
 
 With the local server running and Chromium available, run `npm run test:home` for hover, responsive image geometry at six widths, scroll reveals, reduced-motion and route scope checks.
 
+The large homepage hero rotates three local Figma photographs: the original mountain resort, yoga on the terrace and the open-air spa. Photos hold for five seconds and fade in over 1.1 seconds above the previous opaque image. Captions follow the selected photo; the inset tea photo stays fixed. Dots allow direct selection, and the pause button stops rotation. Autoplay pauses on mouse hover, keyboard focus, hidden tabs and when the hero is outside the viewport. Reduced-motion preferences stop autoplay and remove fades while retaining manual selection. Images decode before rotation, failed photos are skipped, and route changes dispose of timers and listeners. Run `npm run test:hero` to verify the full loop and these controls in Chromium.
+
 ## Responsive layout
 
 `responsive.css` owns mobile-first layout rules using Bootstrap 5 breakpoints: xs below 576px, sm 576px, md 768px, lg 992px, xl 1200px, xxl 1400px. The Bootstrap framework is not required. Container widths, navigation, activity grids, sidebar filters, galleries and checkout columns adapt at these tiers. Reference: https://getbootstrap.com/docs/5.0/layout/breakpoints/

@@ -83,10 +83,60 @@ function home(){search();
  button(named('Action surface',node(7723)),()=>location.hash='#/retreats');
  const heading=named('Retreat collection heading');if(heading){const buttons=$$('[data-name="Button"]',heading);buttons.forEach((e,i)=>button(e,()=>named('Retreats 3-Card Grid').scrollBy({left:i?400:-400,behavior:'smooth'}),i?'ถัดไป':'ก่อนหน้า'))}
  setupHomeMotion();
+ setupHeroSlideshow();
  named('Our approach')?.setAttribute('id','approach');if(location.hash.includes('section=approach'))setTimeout(()=>$('#approach')?.scrollIntoView(),50);
 }
 // Activate reveals only with browser support; content remains readable without motion.
 let cleanupHomeMotion=()=>{};
+let cleanupHeroSlideshow=()=>{};
+function setupHeroSlideshow(){
+ const frame=node(7498),caption=node(7501);
+ if(!frame||!window.matchMedia)return;
+ const slides=$$('.hero-slide',frame),preference=window.matchMedia('(prefers-reduced-motion: reduce)');
+ if(slides.length<2)return;
+ frame.setAttribute('role','region');frame.setAttribute('aria-label','กิจกรรมและบรรยากาศ Oasis');frame.setAttribute('aria-roledescription','สไลด์ภาพ');
+ const controls=document.createElement('div');controls.className='hero-slideshow-controls';controls.setAttribute('role','group');controls.setAttribute('aria-label','ควบคุมภาพกิจกรรม');
+ const pause=document.createElement('button');pause.type='button';pause.className='hero-slide-pause';pause.setAttribute('aria-pressed','false');pause.setAttribute('aria-label','พักการสลับภาพ');
+ pause.innerHTML='<svg viewBox="0 0 20 20" aria-hidden="true" data-icon="pause"><path d="M7 4v12m6-12v12"/></svg><svg viewBox="0 0 20 20" aria-hidden="true" data-icon="play"><path d="m6 4 10 6-10 6Z"/></svg>';controls.append(pause);
+ let current=0,paused=false,hovered=false,focusPaused=false,ready=false,disposed=false,inView=!('IntersectionObserver' in window),timer,fadeTimer;
+ let available=slides.map((_,i)=>i);
+ function schedule(){
+  clearTimeout(timer);
+  if(disposed||!ready||available.length<2||paused||hovered||focusPaused||preference.matches||document.hidden||!inView)return;
+  timer=setTimeout(()=>{activate(available[(available.indexOf(current)+1)%available.length]);schedule();},5000);
+ }
+ function activate(index){
+  if(index===current||!available.includes(index))return;
+  slides.forEach((slide,i)=>{
+   if(slide.classList.contains('is-active'))slide.classList.add('is-previous');
+   slide.classList.toggle('is-active',i===index);slide.setAttribute('aria-hidden',i!==index);
+  });
+  slides[index].classList.remove('is-previous');current=index;caption.textContent=slides[index].dataset.caption;
+  dots.forEach((dot,i)=>dot.setAttribute('aria-pressed',i===index));
+  clearTimeout(fadeTimer);fadeTimer=setTimeout(()=>slides.forEach(slide=>slide.classList.remove('is-previous')),1200);
+ }
+ const dots=slides.map((slide,index)=>{
+  const dot=document.createElement('button');dot.type='button';dot.className='hero-slide-dot';dot.disabled=true;dot.setAttribute('aria-label',`แสดงภาพที่ ${index+1}: ${slide.alt}`);dot.setAttribute('aria-pressed',index===0);
+  dot.onclick=()=>{activate(index);schedule()};controls.append(dot);return dot;
+ });frame.append(controls);
+ pause.onclick=()=>{paused=!paused;pause.setAttribute('aria-pressed',paused);pause.setAttribute('aria-label',paused?'เล่นภาพต่อ':'พักการสลับภาพ');schedule()};
+ const enter=event=>{if(event.pointerType==='mouse'){hovered=true;schedule()}},leave=()=>{hovered=false;schedule()};
+ const focus=event=>{focusPaused=event.target.matches(':focus-visible');schedule()},blur=()=>queueMicrotask(()=>{focusPaused=frame.contains(document.activeElement)&&document.activeElement.matches(':focus-visible');schedule()});
+ const motion=()=>{pause.hidden=preference.matches;schedule()};
+ frame.addEventListener('pointerenter',enter);frame.addEventListener('pointerleave',leave);frame.addEventListener('focusin',focus);frame.addEventListener('focusout',blur);
+ document.addEventListener('visibilitychange',schedule);preference.addEventListener('change',motion);motion();
+ const observer='IntersectionObserver' in window?new IntersectionObserver(entries=>{inView=entries[0].isIntersecting;schedule();},{threshold:.05}):null;observer?.observe(frame);
+ // Decode before rotating; a failed photograph is skipped without exposing an empty frame.
+ Promise.all(slides.map(async slide=>{try{if(slide.decode)await slide.decode();return slide.complete&&slide.naturalWidth>0}catch{return false}})).then(loaded=>{
+  if(disposed)return;available=available.filter(index=>loaded[index]);dots.forEach((dot,i)=>dot.disabled=!loaded[i]);
+  if(available.length&&!available.includes(current))activate(available[0]);ready=true;frame.dataset.slideshowReady='true';pause.disabled=available.length<2;schedule();
+ });
+ cleanupHeroSlideshow=()=>{
+  disposed=true;clearTimeout(timer);clearTimeout(fadeTimer);observer?.disconnect();
+  frame.removeEventListener('pointerenter',enter);frame.removeEventListener('pointerleave',leave);frame.removeEventListener('focusin',focus);frame.removeEventListener('focusout',blur);
+  document.removeEventListener('visibilitychange',schedule);preference.removeEventListener('change',motion);
+ };
+}
 function setupHomeMotion(){
  const root=$('.home-page');
  if(!root||!('IntersectionObserver' in window)||!window.matchMedia)return;
@@ -230,7 +280,7 @@ function checkout(){
  form.onsubmit=e=>{e.preventDefault();if(!form.reportValidity())return;const name=$('[name=firstName]',form).value,paid=node(6751).textContent;app.innerHTML=`<div class="confirmation"><p>OASIS · YOUR RESET STARTS HERE</p><h1>ยืนยันการจองตัวอย่างแล้ว</h1><p>ขอบคุณ ${escape(name)} สำหรับการทดลองจอง</p><h2 class="retreat-main-title">${escape(current.name)}</h2><p>${escape(dates())}<br>ผู้ใหญ่ ${trip.guests} คน · ${escape(trip.room)}</p><p class="money-amount">ยอดรวม ${escape(paid)}</p><p>นี่คือการสาธิต ไม่มีการจองจริง เรียกเก็บเงิน หรือส่งอีเมล<br>ข้อมูลส่วนบุคคลและข้อมูลบัตรไม่ถูกบันทึกหรือส่งออก</p><a class="button" href="#/retreats">ค้นหากิจกรรมเพิ่มเติม</a></div>`;window.scrollTo(0,0);document.title='Oasis · ยืนยันการจองตัวอย่าง';};updatePrices();
 }
 const templates={};
-async function route(){window.OasisUI?.closeAll();cleanupHomeMotion();cleanupHomeMotion=()=>{};const version=++routeVersion;const path=(location.hash||'#/').slice(2).split('?'),segments=path[0].split('/'),params=new URLSearchParams(path[1]||'');if(segments[0]==='saved')params.set('saved','1');const name=segments[0]==='retreats'||segments[0]==='saved'?'listing':segments[0]==='retreat'?'detail':segments[0]==='checkout'?'checkout':'home';current=records.find(x=>x.id===segments[1])||records[0];pageName=name;document.title=`Oasis · ${{home:'Wellness Retreat',listing:'ค้นหากิจกรรม',detail:current.name,checkout:'ข้อมูลการจอง'}[name]}`;
+async function route(){window.OasisUI?.closeAll();cleanupHeroSlideshow();cleanupHeroSlideshow=()=>{};cleanupHomeMotion();cleanupHomeMotion=()=>{};const version=++routeVersion;const path=(location.hash||'#/').slice(2).split('?'),segments=path[0].split('/'),params=new URLSearchParams(path[1]||'');if(segments[0]==='saved')params.set('saved','1');const name=segments[0]==='retreats'||segments[0]==='saved'?'listing':segments[0]==='retreat'?'detail':segments[0]==='checkout'?'checkout':'home';current=records.find(x=>x.id===segments[1])||records[0];pageName=name;document.title=`Oasis · ${{home:'Wellness Retreat',listing:'ค้นหากิจกรรม',detail:current.name,checkout:'ข้อมูลการจอง'}[name]}`;
  try{if(!templates[name]){const res=await fetch(`views/${name}.html`);if(!res.ok)throw Error('ไม่สามารถโหลดหน้าเว็บได้');templates[name]=await res.text()}if(version!==routeVersion)return;app.innerHTML=templates[name];common();if(name==='home')home();else if(name==='listing')listing(params);else if(name==='detail')detail();else checkout();refreshCurrency();window.OasisUI?.enhance(app);window.scrollTo(0,0);app.focus({preventScroll:true});}catch(e){app.innerHTML='<div class="confirmation"><h1>ไม่สามารถโหลดหน้าได้</h1><p>โปรดรีเฟรชและลองอีกครั้ง</p></div>';console.error(e)}
 }
 window.addEventListener('hashchange',route);route();

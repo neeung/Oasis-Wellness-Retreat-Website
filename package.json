@@ -10,6 +10,7 @@
     "check:assets": "node scripts/check-assets.mjs",
     "assets:download": "node scripts/download-figma-assets.mjs",
     "test:home": "node tests/home-effects.mjs",
+    "test:hero": "node tests/hero-slideshow.mjs",
     "test:budget": "node tests/budget-slider.mjs",
     "test:responsive": "node tests/responsive.mjs",
     "test:currency": "node tests/currency.mjs",
