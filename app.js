@@ -103,7 +103,7 @@ function setupHeroSlideshow(){
  function schedule(){
   clearTimeout(timer);
   if(disposed||!ready||available.length<2||paused||hovered||focusPaused||preference.matches||document.hidden||!inView)return;
-  timer=setTimeout(()=>{activate(available[(available.indexOf(current)+1)%available.length]);schedule();},5000);
+  timer=setTimeout(()=>{activate(available[(available.indexOf(current)+1)%available.length]);schedule();},3000);
  }
  function activate(index){
   if(index===current||!available.includes(index))return;
